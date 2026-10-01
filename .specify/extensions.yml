@@ -1,0 +1,15 @@
+# Spec Kit extension hooks for Libertus2.
+# Read by the speckit-* skills before and after each command. See ADR-0003.
+hooks:
+  after_plan:
+    - extension: architecture
+      command: speckit.architecture
+      enabled: true
+      optional: false
+      description: "Apply the plan's Architecture Impact to the LikeC4 model in docs/architecture/ and validate it"
+  after_implement:
+    - extension: architecture
+      command: speckit.architecture
+      enabled: true
+      optional: false
+      description: "Check that the LikeC4 model matches what was built, fix drift, and validate it"

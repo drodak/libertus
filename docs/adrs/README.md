@@ -17,3 +17,4 @@ To change an accepted decision, write a new ADR and set the old one's status to 
 |-----|-------|--------|------|
 | [0001](0001-use-madr-for-architecture-decision-records.md) | Use MADR for Architecture Decision Records | proposed | 2026-09-30 |
 | [0002](0002-use-spec-kit-for-spec-driven-development.md) | Use Spec Kit for Spec-Driven Development | proposed | 2026-09-30 |
+| [0003](0003-use-likec4-for-architecture-as-code.md) | Use LikeC4 for Architecture as Code | proposed | 2026-10-01 |

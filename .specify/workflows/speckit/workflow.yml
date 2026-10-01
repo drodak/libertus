@@ -57,7 +57,7 @@ steps:
 
   - id: review-plan
     type: gate
-    message: "Review the plan before generating tasks."
+    message: "Review the plan, its Architecture Impact section, and the resulting changes to docs/architecture/ before generating tasks."
     options: [approve, reject]
     on_reject: abort
 
@@ -66,6 +66,19 @@ steps:
     integration: "{{ inputs.integration }}"
     input:
       args: "{{ inputs.spec }}"
+
+  # Analysis gate (constitution, Development Workflow and Quality Gates, gate 3).
+  - id: analyze
+    command: speckit.analyze
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.spec }}"
+
+  - id: review-analysis
+    type: gate
+    message: "Review the analysis report; continue only if it has no CRITICAL issues (including architecture model drift)."
+    options: [approve, reject]
+    on_reject: abort
 
   - id: implement
     command: speckit.implement
