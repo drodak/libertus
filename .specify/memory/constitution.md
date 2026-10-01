@@ -1,40 +1,46 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.0.0 → 1.1.0
-Bump rationale: MINOR — Principle II materially expanded (architecture model), gates extended;
+Version change: 1.1.0 → 1.2.0
+Bump rationale: MINOR — Technology and Security Constraints materially expanded (the
+application stack is now fixed by accepted ADRs 0004–0012), Plan and Merge gates extended;
 no principle removed or redefined incompatibly.
 
-Modified principles (old title → new title):
-  - II. Recorded Architecture Decisions → II. Recorded Architecture Decisions and Model
-    (adds the LikeC4 model as source of truth for system structure, per ADR-0003)
-  - V. Repository as Single Source of Truth (architecture model added to versioned artifacts)
+Modified principles: none (I–V unchanged)
 
 Modified sections:
-  - Technology and Security Constraints (LikeC4 tooling noted as development-time only)
-  - Development Workflow and Quality Gates (Plan, Analysis and Merge gates cover the model)
-  - Governance (compliance check includes model validation)
+  - Technology and Security Constraints ("no stack fixed yet" replaced by the stack, delivery
+    and repository constraints of ADR-0004–0012; open decisions listed)
+  - Development Workflow and Quality Gates (Plan gate checks stack conformance; Merge gate
+    names the CI checks of ADR-0004, 0008, 0010 and 0012)
+  - Governance (a superseding stack ADR requires a constitution amendment)
 
 Added sections: none
 Removed sections: none
 
+ADR status: 0001–0012 are all `accepted`; docs/adrs/README.md index matches the front matter.
+
 Dependent artifacts:
-  ✅ .specify/templates/overrides/plan-template.md — Architecture Impact section
-  ✅ .specify/extensions.yml — after_plan / after_implement hooks to speckit-architecture
-  ✅ .claude/skills/speckit-architecture/SKILL.md — applies and verifies model changes
-  ✅ .specify/workflows/speckit/workflow.yml — analyze step and gate before implement
-  ⚠ .specify/templates/tasks-template.md — no change needed (verification runs as a hook)
+  ⚠ .specify/templates/overrides/plan-template.md — Technical Context still shows generic
+    placeholders (Python, FastAPI, …); plans must fill it from the stack fixed here.
+    Not changed by this amendment.
+
+Migration: none — no feature spec, plan, or code exists yet.
 
 Follow-up TODOs:
-  - ADR-0003 (LikeC4) is still `proposed`; this amendment assumes its acceptance.
-  - docs/architecture/ model skeleton does not exist yet; speckit-architecture creates it on
-    first use, or it can be added up front.
-  - No CI pipeline exists yet to run `likec4 format --check` and `likec4 validate`.
+  - Nothing the new gates check exists yet: no backend/, frontend/, .github/workflows/,
+    Dockerfiles, branch protection, or docs/architecture/ model. The gates bind from the
+    first feature that creates them.
+  - ADR-0006 and ADR-0008 name the CI command `./gradlew :backend:build`, but ADR-0006 makes
+    backend/ its own Gradle build (the wrapper lives in backend/, with no `:backend`
+    project). Settle the invocation when the build is scaffolded; this constitution does not
+    name the command.
+  - ADR-0007 still describes the frontend stack as "TBD by its own ADR" in its conventions;
+    ADR-0011 decides it.
+  - Hosting/runtime target, deployment, API contract, and GHCR retention policy are undecided
+    and each need an ADR.
   - Principles III–V and the security constraints are general defaults, not derived from
     project decisions; confirm or amend before the first feature spec.
-  - ADR-0002 is still `proposed`; this constitution assumes its acceptance.
-  - ADR-0001 front matter says `accepted` but docs/adrs/README.md index lists it as `proposed`.
-  - No application stack chosen yet; add stack constraints by amendment once ADRs exist.
 -->
 
 # Libertus2 Constitution
@@ -117,10 +123,44 @@ Rationale: artifacts that drift from the code mislead both humans and agents.
 
 ## Technology and Security Constraints
 
-- No technology stack is fixed yet. Each stack choice (language, framework, data store,
-  hosting) MUST be introduced through an ADR before code depending on it is merged.
-- LikeC4 (Node.js >= 22) is adopted by ADR-0003 as a development-time tool for the architecture
-  model only; it is not a runtime dependency and does not fix the application stack.
+The application stack is fixed by accepted ADRs. The ADR holds the full conventions and
+rationale; the rules below are the binding summary. Changing any of them requires a superseding
+ADR (Principle II) and an amendment of this section.
+
+- **Repository** (ADR-0007): one GitHub monorepo with one top-level directory per deployable —
+  `backend/` and `frontend/`. Each deployable MUST be independently buildable, testable,
+  versioned, and released; release tags are prefixed by deployable (`backend-v1.2.0`).
+- **Architecture** (ADR-0004): the backend is one deployable Spring Boot application structured
+  as a modular monolith. Each direct subpackage of the main application package is one Spring
+  Modulith application module. A module MUST be used by other modules only through the types
+  in its root package or through application events, and MUST declare its allowed dependencies.
+  A test asserting `ApplicationModules.of(Application.class).verify()` MUST exist and run in CI.
+- **Platform** (ADR-0005): Java 25, Spring Boot 4.1.x, Spring Modulith 2.1.x. Spring Boot and
+  Spring Modulith minor versions MUST be upgraded together.
+- **Build** (ADR-0006): Gradle with Kotlin DSL. The backend is one Gradle module under
+  `backend/` with the Java toolchain pinned to 25; a Gradle subproject per business module MUST
+  NOT be introduced.
+- **Data store** (ADR-0009): PostgreSQL is the default. A non-relational store MAY be
+  introduced only through its own ADR that meets all four criteria of ADR-0009.
+- **Data access** (ADR-0010): Spring Data JPA is the default. Spring JDBC MAY be used for a
+  specific query or operation when one of the four ADR-0010 criteria applies, and the pull
+  request MUST state which. No third data-access technology is used. Flyway is the single
+  source of truth for the schema; Hibernate `ddl-auto` MUST be `validate` (or `none` for local
+  development) and MUST NOT create or alter the schema.
+- **Frontend** (ADR-0011): Angular with TypeScript and standalone components, built with the
+  Angular CLI, with npm as the package manager.
+- **Continuous integration** (ADR-0008): GitHub Actions, with one path-filtered CI workflow per
+  deployable. These workflows MUST be required status checks on `main`.
+- **Delivery** (ADR-0012): every deployable MUST be delivered as an OCI container image
+  published to GitHub Container Registry, built from the `Dockerfile` in its own directory. The
+  image is the only release artifact. Images MUST be pushed only by GitHub Actions
+  authenticating with `GITHUB_TOKEN`; commit-SHA and version tags MUST NOT be overwritten, and
+  a `latest` tag MUST NOT be published.
+- **Architecture tooling** (ADR-0003): LikeC4 (Node.js >= 22) is a development-time tool for
+  the architecture model only; it is not a runtime dependency.
+- **Not yet decided**: the hosting/runtime target and deployment, the API contract between
+  frontend and backend (versioning, typed-client generation), and any technology not listed
+  above. Each MUST be introduced through an ADR before code depending on it is merged.
 - Secrets, credentials, and personal data MUST NOT be committed to the repository, including
   in specs, fixtures, and example files.
 - New third-party dependencies MUST be actively maintained and have a licence compatible with
@@ -133,13 +173,17 @@ Rationale: artifacts that drift from the code mislead both humans and agents.
 - Gates, in order:
   1. **Spec gate** — `spec.md` has no unresolved `[NEEDS CLARIFICATION]` markers.
   2. **Plan gate** — the plan's Constitution Check passes for every principle above, or each
-     violation is justified in Complexity Tracking; required ADRs exist; the Architecture
-     Impact section is filled in and its model changes are applied and valid (the
-     `speckit-architecture` hook runs after `speckit-plan`).
+     violation is justified in Complexity Tracking; required ADRs exist; the plan's Technical
+     Context conforms to Technology and Security Constraints, or links the ADR that grants the
+     exception or supersedes the constraint; the Architecture Impact section is filled in and
+     its model changes are applied and valid (the `speckit-architecture` hook runs after
+     `speckit-plan`).
   3. **Analysis gate** — `speckit-analyze` reports no critical issues before `speckit-implement`;
      a structural change in `plan.md` that is missing from the model is an issue.
-  4. **Merge gate** — the pull request links `spec.md`, `plan.md`, and `tasks.md`; tests pass;
-     the architecture model passes validation and the `speckit-architecture` verification
+  4. **Merge gate** — the pull request links `spec.md`, `plan.md`, and `tasks.md`; the CI
+     workflow of every affected deployable passes — build, full test suite, Spring Modulith
+     verification, Flyway migrations applied to a test database, and the container image
+     build; the architecture model passes validation and the `speckit-architecture` verification
      after `speckit-implement` reports no unresolved drift; a reviewer confirms the
      implementation matches the spec.
 - Pipeline-exempt changes (Principle I) still require passing tests and review.
@@ -153,12 +197,15 @@ Rationale: artifacts that drift from the code mislead both humans and agents.
   change and its rationale, and are merged only after review by a project decision-maker.
   Amendments that change a principle or gate MUST describe any migration needed for work in
   progress.
+- An ADR that supersedes a decision summarised in Technology and Security Constraints MUST be
+  accompanied by an amendment of that section in the same pull request.
 - Versioning follows semantic versioning:
   - MAJOR — a principle or gate is removed or redefined incompatibly.
   - MINOR — a principle or section is added or materially expanded.
   - PATCH — clarifications and wording fixes with no change in meaning.
 - Compliance is checked at the Plan gate (Constitution Check in every `plan.md`), by
-  `speckit-analyze`, by architecture model validation, and during pull-request review. Reviewers MUST reject changes that violate
-  a principle without a recorded justification.
+  `speckit-analyze`, by architecture model validation, by the required CI workflows, and during
+  pull-request review. Reviewers MUST reject changes that violate a principle or constraint
+  without a recorded justification.
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-30 | **Last Amended**: 2026-10-01
+**Version**: 1.2.0 | **Ratified**: 2026-09-30 | **Last Amended**: 2026-10-01

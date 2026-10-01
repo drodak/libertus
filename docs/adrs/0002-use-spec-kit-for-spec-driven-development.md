@@ -1,6 +1,6 @@
 ---
-status: proposed
-date: 2026-09-30
+status: accepted
+date: 2026-10-01
 decision-makers: drodak
 ---
 
