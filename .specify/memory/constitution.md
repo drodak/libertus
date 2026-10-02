@@ -1,63 +1,64 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.3.0 → 1.4.0
-Bump rationale: MINOR — Development Workflow and Quality Gates materially expanded following
-acceptance of ADR-0015 (branching, rebasing, review, merging); Plan, Analysis, and Merge gates
-extended. No principle or gate is removed or redefined incompatibly.
+Version change: 1.4.0 → 1.5.0
+Bump rationale: MINOR — a new Technology and Security Constraints entry (local and
+small-environment deployment, ADR-0016) is added, and the Repository entry, "Not yet decided",
+and the Merge gate are extended to match. No principle or gate is removed or redefined
+incompatibly.
 
 Modified principles: none — I–V unchanged.
 
 Modified sections:
-  - Development Workflow and Quality Gates: the single line "Each feature is developed on its
-    own branch…" is replaced by the binding summary of ADR-0015 — Branching, Features,
-    Rebasing, Review, Merging. Plan gate: rebase before `speckit-plan` and the feature-size
-    check. Analysis gate: rebase before `speckit-implement`. Merge gate: complete feature,
-    branch rebased onto `main`, review by a person, squash merge by a person. The line on
-    pipeline-exempt changes now refers to the same rules.
-  - Governance: an ADR superseding a decision summarised in Development Workflow and Quality
-    Gates also requires an amendment; compliance checks name branch protection and repository
-    settings.
+  - Technology and Security Constraints:
+    - Repository: `compose.yaml` and `compose.override.yaml` added to the shared top-level paths.
+    - Added entry "Local and small-environment deployment" (ADR-0016): Docker Compose for
+      one-host environments and as the only way to run the whole system locally; the split
+      between `compose.yaml` and `compose.override.yaml`; no credentials in `compose.yaml`;
+      published GHCR images outside a developer's machine; `.env` not committed; the same
+      PostgreSQL major version as Testcontainers; tests do not use the Compose services; CI
+      path filters and `docker compose config` validation.
+    - Not yet decided: "the hosting/runtime target and deployment" narrowed to environments
+      outside ADR-0016's scope and to automated deployment; TLS termination, database backup
+      and restore, and host secret storage for non-local small environments listed explicitly.
+  - Development Workflow and Quality Gates: Merge gate CI line gains the validation of the
+    Compose files.
 
-Added sections: none
+Added sections: none (one entry added inside an existing section)
 Removed sections: none
 
-ADR status: 0001–0015 are all `accepted`; docs/adrs/README.md index matches the front matter.
-ADR-0015 was set from `proposed` to `accepted` together with this amendment.
+ADR status: 0001–0015 are `accepted`. ADR-0016 is still `proposed` — this command writes only
+the constitution. Its front matter and the docs/adrs/README.md index row MUST be set to
+`accepted` in the same pull request as this amendment (as was done for ADR-0015).
 
 Dependent artifacts:
-  ⚠ .specify/templates/overrides/plan-template.md — the Constitution Check is filled from this
-    file at plan time, so the feature-size check is picked up without a template change. Its
-    Technical Context still shows generic placeholders (carried over from 1.3.0).
-  ⚠ speckit-plan, speckit-implement — neither rebases the branch. The rebases required here
-    are done by hand before running them; `before_plan` and `before_implement` hooks in
-    `.specify/extensions.yml` could automate this (ADR-0015 leaves it undecided).
-  ⚠ speckit-specify — no branch-creating hook is configured, so the feature branch is created
-    by hand before the spec is written.
+  ✅ .specify/templates/overrides/plan-template.md — the Constitution Check is filled from this
+    file at plan time; no template change needed. Its Technical Context still shows generic
+    placeholders (carried over from 1.3.0).
+  ✅ .specify/templates/overrides/spec-template.md, tasks-template.md — no change needed.
+  ⚠ speckit-plan, speckit-implement — still do not rebase the branch (carried over from 1.4.0).
+  ⚠ speckit-specify — no branch-creating hook configured (carried over from 1.4.0).
   ⚠ .claude/skills/speckit-tasks/SKILL.md, speckit-analyze — open points carried over from
     1.3.0 (tests described as optional; scenario test-task order not checked).
-  ✅ .specify/templates/overrides/spec-template.md, tasks-template.md — no change needed.
 
-Migration: none — no feature spec, plan, or code exists yet, and no feature branch is open.
+Migration: the feature branch `1-create-backend-skeleton` is open but has no spec, plan, or
+code yet. Its plan MUST include `compose.yaml`, `compose.override.yaml`, the `.env` entry in
+`.gitignore`, the Compose path filters, and the `docker compose config` validation in the
+backend CI workflow. Nothing already merged is affected.
 
 Follow-up TODOs:
-  - Repository settings and branch protection required by ADR-0015 do not exist yet (the
-    repository has no remote configured): squash merging only, auto-merge disabled, branches
-    deleted on merge; on `main` a required pull request, required status checks, an up-to-date
-    branch, linear history, no direct pushes, administrators included, zero required
-    approvals while the project has one developer.
-  - No agent instruction file (CLAUDE.md or AGENTS.md) exists. The rule that an agent does not
-    merge pull requests has to be written there for ADR-0015's confirmation to hold.
-  - History so far was committed directly to `main`. From this amendment on, changes —
-    including this one, once branch protection exists — go through a pull request.
-  - Carried over from 1.3.0: nothing the gates check exists yet (backend/, frontend/, api/,
-    e2e/, .github/workflows/, Dockerfiles, docs/architecture/ model, scenario traceability
-    script); the two ADR-0013 points to confirm when the backend build is scaffolded; the
-    OpenAPI validator and Angular client generator are not chosen; the `./gradlew
-    :backend:build` invocation in ADR-0006/0008; ADR-0007's "TBD" frontend stack wording;
-    hosting, deployment, API authentication/authorisation, and GHCR retention are undecided;
-    Principles IV–V and the security constraints are general defaults to confirm before the
-    first feature spec.
+  - Set ADR-0016 to `accepted` (front matter and index) in this pull request.
+  - Carried over from 1.4.0: repository settings and branch protection required by ADR-0015
+    do not exist yet (no remote is configured); no agent instruction file (CLAUDE.md or
+    AGENTS.md) states that an agent does not merge pull requests.
+  - Carried over from 1.3.0, updated: nothing the gates check exists yet (backend/, frontend/,
+    api/, e2e/, .github/workflows/, Dockerfiles, compose.yaml, compose.override.yaml,
+    docs/architecture/ model, scenario traceability script); the two ADR-0013 points to confirm
+    when the backend build is scaffolded; the OpenAPI validator and Angular client generator
+    are not chosen; the `./gradlew :backend:build` invocation in ADR-0006/0008; ADR-0007's
+    "TBD" frontend stack wording; hosting beyond one host, automated deployment, API
+    authentication/authorisation, and GHCR retention are undecided; Principles IV–V and the
+    security constraints are general defaults to confirm before the first feature spec.
 -->
 
 # Libertus Constitution
@@ -160,8 +161,8 @@ ADR (Principle II) and an amendment of this section.
 - **Repository** (ADR-0007): one GitHub monorepo with one top-level directory per deployable —
   `backend/` and `frontend/`. Each deployable MUST be independently buildable, testable,
   versioned, and released; release tags are prefixed by deployable (`backend-v1.2.0`). The
-  shared top-level paths are `docs/`, `.specify/`, `.github/`, `api/` (ADR-0013), and `e2e/`
-  (ADR-0014).
+  shared top-level paths are `docs/`, `.specify/`, `.github/`, `api/` (ADR-0013), `e2e/`
+  (ADR-0014), and `compose.yaml` and `compose.override.yaml` (ADR-0016).
 - **Architecture** (ADR-0004): the backend is one deployable Spring Boot application structured
   as a modular monolith. Each direct subpackage of the main application package is one Spring
   Modulith application module. A module MUST be used by other modules only through the types
@@ -211,10 +212,29 @@ ADR (Principle II) and an amendment of this section.
   image is the only release artifact. Images MUST be pushed only by GitHub Actions
   authenticating with `GITHUB_TOKEN`; commit-SHA and version tags MUST NOT be overwritten, and
   a `latest` tag MUST NOT be published.
+- **Local and small-environment deployment** (ADR-0016): Docker Compose is the deployment
+  method for small environments — one host, no high availability, no horizontal scaling, no
+  rolling upgrade — and the only supported way to run the whole system on a developer's
+  machine. The system is described by `compose.yaml` in the repository root, with one service
+  per deployable and one for PostgreSQL; a new deployable, and any external system the
+  application needs in order to start, MUST be added to it in the pull request that introduces
+  it. `compose.yaml` MUST NOT contain credentials or defaults for them, and a required variable
+  has no default. What applies only to a developer's machine — building the images from the
+  working tree, development-only values marked as not secret, and published ports — lives in
+  `compose.override.yaml`. Every other environment runs from `compose.yaml` alone: it runs
+  images published to GHCR, referenced by version tag or digest, builds nothing on the host,
+  takes its values and secrets from the operator, and does not publish the database port;
+  `.env` MUST NOT be committed. The PostgreSQL service uses the same major version as the
+  Testcontainers database, and automated tests MUST NOT use the Compose services. The CI
+  workflow of every deployable includes both files in its path filter and validates them with
+  `docker compose config`, with and without the override.
 - **Architecture tooling** (ADR-0003): LikeC4 (Node.js >= 22) is a development-time tool for
   the architecture model only; it is not a runtime dependency.
-- **Not yet decided**: the hosting/runtime target and deployment, authentication and
-  authorisation of the API, and any technology not listed above. Each MUST be introduced
+- **Not yet decided**: the hosting/runtime target and deployment of environments outside the
+  small-environment scope of ADR-0016; automated deployment (continuous delivery) to any
+  environment; for small environments other than a developer's machine, TLS termination,
+  backup and restore of the database, and storage of secrets on the host; authentication and
+  authorisation of the API; and any technology not listed above. Each MUST be introduced
   through an ADR before code depending on it is merged.
 - Secrets, credentials, and personal data MUST NOT be committed to the repository, including
   in specs, fixtures, and example files.
@@ -274,8 +294,8 @@ ADR (Principle II) and an amendment of this section.
      `plan.md`, and `tasks.md`; the branch is rebased onto the current `main`; the CI
      workflow of every affected deployable passes — build including code generation from the
      API contract, full test suite, Spring Modulith verification and the other architecture
-     fitness tests, Flyway migrations applied to a test database, and the container image
-     build; when `api/` changes, the contract lint and the breaking-change comparison with
+     fitness tests, Flyway migrations applied to a test database, the container image build,
+     and the validation of the Compose files; when `api/` changes, the contract lint and the breaking-change comparison with
      `main` pass; the end-to-end workflow passes; the scenario traceability check passes;
      the architecture model passes validation and the `speckit-architecture` verification
      after `speckit-implement` reports no unresolved drift; the reviewer (see Review) confirms
@@ -305,4 +325,4 @@ ADR (Principle II) and an amendment of this section.
   protection and the repository's merge settings, and during pull-request review. Reviewers
   MUST reject changes that violate a principle or constraint without a recorded justification.
 
-**Version**: 1.4.0 | **Ratified**: 2026-09-30 | **Last Amended**: 2026-10-03
+**Version**: 1.5.0 | **Ratified**: 2026-09-30 | **Last Amended**: 2026-10-03

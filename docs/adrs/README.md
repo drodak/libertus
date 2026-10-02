@@ -30,3 +30,4 @@ To change an accepted decision, write a new ADR and set the old one's status to 
 | [0013](0013-openapi-spec-first-api-contract.md) | OpenAPI Spec-First Contract for the Frontend–Backend API | accepted | 2026-10-01 |
 | [0014](0014-testing-strategy-by-layer.md) | Testing Strategy: Module-Centred Test Layers with Real Infrastructure | accepted | 2026-10-01 |
 | [0015](0015-trunk-based-development-with-short-lived-feature-branches.md) | Trunk-Based Development with One Short-Lived Branch per Feature | accepted | 2026-10-03 |
+| [0016](0016-docker-compose-for-local-and-small-environment-deployment.md) | Docker Compose as a Deployment Method for Local Development and Small Environments | proposed | 2026-10-03 |
