@@ -29,3 +29,4 @@ To change an accepted decision, write a new ADR and set the old one's status to 
 | [0012](0012-container-images-published-to-ghcr.md) | Container Images Published to GitHub Container Registry as the Delivery Artifact | accepted | 2026-10-01 |
 | [0013](0013-openapi-spec-first-api-contract.md) | OpenAPI Spec-First Contract for the Frontend–Backend API | accepted | 2026-10-01 |
 | [0014](0014-testing-strategy-by-layer.md) | Testing Strategy: Module-Centred Test Layers with Real Infrastructure | accepted | 2026-10-01 |
+| [0015](0015-trunk-based-development-with-short-lived-feature-branches.md) | Trunk-Based Development with One Short-Lived Branch per Feature | accepted | 2026-10-03 |

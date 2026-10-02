@@ -1,75 +1,63 @@
 <!--
 Sync Impact Report
 ==================
-Version change: 1.2.0 → 1.3.0
-Bump rationale: MINOR — Principle III and Technology and Security Constraints materially
-expanded following acceptance of ADR-0013 (API contract) and ADR-0014 (testing strategy);
-Analysis and Merge gates extended. Principle III is tightened, not redefined incompatibly, and
-no principle or gate is removed.
+Version change: 1.3.0 → 1.4.0
+Bump rationale: MINOR — Development Workflow and Quality Gates materially expanded following
+acceptance of ADR-0015 (branching, rebasing, review, merging); Plan, Analysis, and Merge gates
+extended. No principle or gate is removed or redefined incompatibly.
 
-Modified principles:
-  - III. Verified Behaviour (title unchanged):
-      - scenario identifier `<feature>-US<story>-AS<scenario>` and the rule that tests carry it;
-      - test-first raised from SHOULD to MUST for acceptance-scenario tests; it stays SHOULD
-        for other tests, and the old "the pull request MUST say why it was skipped" clause is
-        dropped with it;
-      - scenario-test assertions change only together with the scenario in spec.md;
-      - tests follow the layers and test-double rules of ADR-0014;
-      - coverage is reported, never a threshold.
-  - I, II, IV, V unchanged.
+Modified principles: none — I–V unchanged.
 
 Modified sections:
-  - Technology and Security Constraints: Repository entry names the shared paths `api/` and
-    `e2e/`; new API contract entry (ADR-0013); new Testing entry (ADR-0014); the API contract
-    is removed from "Not yet decided", and API authentication/authorisation is added to it.
-  - Development Workflow and Quality Gates: Analysis gate checks scenario test tasks and their
-    order; Merge gate names code generation, architecture fitness tests, the contract checks,
-    the end-to-end workflow, and the scenario traceability check.
+  - Development Workflow and Quality Gates: the single line "Each feature is developed on its
+    own branch…" is replaced by the binding summary of ADR-0015 — Branching, Features,
+    Rebasing, Review, Merging. Plan gate: rebase before `speckit-plan` and the feature-size
+    check. Analysis gate: rebase before `speckit-implement`. Merge gate: complete feature,
+    branch rebased onto `main`, review by a person, squash merge by a person. The line on
+    pipeline-exempt changes now refers to the same rules.
+  - Governance: an ADR superseding a decision summarised in Development Workflow and Quality
+    Gates also requires an amendment; compliance checks name branch protection and repository
+    settings.
 
 Added sections: none
 Removed sections: none
 
-ADR status: 0001–0014 are all `accepted`; docs/adrs/README.md index matches the front matter.
+ADR status: 0001–0015 are all `accepted`; docs/adrs/README.md index matches the front matter.
+ADR-0015 was set from `proposed` to `accepted` together with this amendment.
 
 Dependent artifacts:
-  ✅ .specify/templates/overrides/tasks-template.md — new project override: test tasks are
-    mandatory, carry the scenario identifier, and come after the API contract change and
-    before implementation; paths follow the repository layout fixed here.
-  ✅ .specify/templates/overrides/spec-template.md — new project override: acceptance
-    scenarios carry the `<feature>-US<story>-AS<scenario>` identifier, and each user story
-    states whether it is a critical journey (ADR-0014 end-to-end scope).
-  ⚠ .claude/skills/speckit-tasks/SKILL.md — still says "Tests are OPTIONAL" and "tests (if
-    requested)". The constitution and the tasks template override take precedence; the skill
-    text is an upstream-managed file and is not changed here.
-  ⚠ .specify/templates/overrides/plan-template.md — Technical Context still shows generic
-    placeholders (Python, FastAPI, pytest, …); plans must fill it from the stack fixed here.
-    Not changed by this amendment.
-  ⚠ speckit-analyze — does not yet check that a scenario's test task exists and precedes its
-    implementation tasks, as the Analysis gate now requires.
+  ⚠ .specify/templates/overrides/plan-template.md — the Constitution Check is filled from this
+    file at plan time, so the feature-size check is picked up without a template change. Its
+    Technical Context still shows generic placeholders (carried over from 1.3.0).
+  ⚠ speckit-plan, speckit-implement — neither rebases the branch. The rebases required here
+    are done by hand before running them; `before_plan` and `before_implement` hooks in
+    `.specify/extensions.yml` could automate this (ADR-0015 leaves it undecided).
+  ⚠ speckit-specify — no branch-creating hook is configured, so the feature branch is created
+    by hand before the spec is written.
+  ⚠ .claude/skills/speckit-tasks/SKILL.md, speckit-analyze — open points carried over from
+    1.3.0 (tests described as optional; scenario test-task order not checked).
+  ✅ .specify/templates/overrides/spec-template.md, tasks-template.md — no change needed.
 
-Migration: none — no feature spec, plan, or code exists yet.
+Migration: none — no feature spec, plan, or code exists yet, and no feature branch is open.
 
 Follow-up TODOs:
-  - Nothing the gates check exists yet: no backend/, frontend/, api/, e2e/,
-    .github/workflows/, Dockerfiles, branch protection, docs/architecture/ model, or scenario
-    traceability script. The gates bind from the first feature that creates them.
-  - ADR-0013 leaves two points to be confirmed by the plan that scaffolds the backend build:
-    that OpenAPI Generator's `spring` output works on Spring Boot 4.1, and that Spring
-    Modulith treats the generated package outside the application's base package as an
-    ordinary dependency. If either fails, ADR-0013 needs a superseding ADR and this
-    constitution an amendment.
-  - ADR-0013 names candidates but does not choose the OpenAPI validator for backend tests or
-    the Angular client generator; the plan that introduces each records the choice.
-  - ADR-0006 and ADR-0008 name the CI command `./gradlew :backend:build`, but ADR-0006 makes
-    backend/ its own Gradle build (the wrapper lives in backend/, with no `:backend`
-    project). Settle the invocation when the build is scaffolded; this constitution does not
-    name the command.
-  - ADR-0007 still describes the frontend stack as "TBD by its own ADR" in its conventions;
-    ADR-0011 decides it.
-  - Hosting/runtime target, deployment, API authentication/authorisation, and GHCR retention
-    policy are undecided and each need an ADR.
-  - Principles IV–V and the security constraints are general defaults, not derived from
-    project decisions; confirm or amend before the first feature spec.
+  - Repository settings and branch protection required by ADR-0015 do not exist yet (the
+    repository has no remote configured): squash merging only, auto-merge disabled, branches
+    deleted on merge; on `main` a required pull request, required status checks, an up-to-date
+    branch, linear history, no direct pushes, administrators included, zero required
+    approvals while the project has one developer.
+  - No agent instruction file (CLAUDE.md or AGENTS.md) exists. The rule that an agent does not
+    merge pull requests has to be written there for ADR-0015's confirmation to hold.
+  - History so far was committed directly to `main`. From this amendment on, changes —
+    including this one, once branch protection exists — go through a pull request.
+  - Carried over from 1.3.0: nothing the gates check exists yet (backend/, frontend/, api/,
+    e2e/, .github/workflows/, Dockerfiles, docs/architecture/ model, scenario traceability
+    script); the two ADR-0013 points to confirm when the backend build is scaffolded; the
+    OpenAPI validator and Angular client generator are not chosen; the `./gradlew
+    :backend:build` invocation in ADR-0006/0008; ADR-0007's "TBD" frontend stack wording;
+    hosting, deployment, API authentication/authorisation, and GHCR retention are undecided;
+    Principles IV–V and the security constraints are general defaults to confirm before the
+    first feature spec.
 -->
 
 # Libertus Constitution
@@ -235,8 +223,39 @@ ADR (Principle II) and an amendment of this section.
 
 ## Development Workflow and Quality Gates
 
-- Each feature is developed on its own branch with a sequentially numbered spec directory
-  under `specs/`.
+Branching, review, and merging are fixed by ADR-0015. The ADR holds the full conventions and
+rationale; the rules below are the binding summary. Changing any of them requires a superseding
+ADR (Principle II) and an amendment of this section.
+
+- **Branching**: `main` is the only long-lived branch. Every change MUST reach `main` through a
+  pull request from its own branch; direct pushes to `main` MUST be rejected by branch
+  protection, administrators included. The age of a branch is not limited. A release is a tag
+  on a commit of `main`.
+- **Features**: each feature is developed on its own branch with a sequentially numbered spec
+  directory under `specs/`. A feature MUST be merged complete, in one pull request that
+  contains its `spec.md`, `plan.md`, `tasks.md`, the implementation, and the tests of every
+  acceptance scenario. A pull request MUST NOT merge part of a feature. A feature that cannot
+  be reviewed in one pull request MUST be split into smaller features, each with its own spec
+  and each delivering working behaviour on its own.
+- **Rebasing**: a feature branch MUST be rebased onto the current `main` before `speckit-plan`,
+  before `speckit-implement`, and before it is merged. `main` MUST NOT be merged into a branch.
+  If the rebase before `speckit-implement` brings in changes that affect the plan, `plan.md`
+  and `tasks.md` MUST be updated before implementation starts. A feature number or a Flyway
+  migration version that `main` has taken in the meantime MUST be renumbered on the branch.
+- **Review**: every pull request MUST be reviewed by a person before it is merged. Only a
+  person merges a pull request: an AI coding agent MAY create the branch, push to it, and open
+  the pull request, and MUST NOT merge it; auto-merge MUST be disabled. A review by an agent
+  does not count as the approval. A change pushed after the review MUST be reviewed again,
+  except a rebase onto `main` that needed no conflict resolution.
+  - While the project has one developer, that developer reviews every pull request, including
+    those opened under their own account, and merging is the approval; GitHub's required
+    approving review is not switched on.
+  - Once a second contributor has write access, the approval MUST be given by a person who
+    neither wrote the change nor directed the agent that wrote it, and GitHub's required
+    approving review MUST be switched on.
+- **Merging**: a pull request MUST be merged by squashing, so that it becomes one commit on top
+  of `main`. The repository MUST allow squash merging only, and the history of `main` MUST be
+  linear. The branch is deleted when it is merged.
 - Gates, in order:
   1. **Spec gate** — `spec.md` has no unresolved `[NEEDS CLARIFICATION]` markers.
   2. **Plan gate** — the plan's Constitution Check passes for every principle above, or each
@@ -244,21 +263,26 @@ ADR (Principle II) and an amendment of this section.
      Context conforms to Technology and Security Constraints, or links the ADR that grants the
      exception or supersedes the constraint; the Architecture Impact section is filled in and
      its model changes are applied and valid (the `speckit-architecture` hook runs after
-     `speckit-plan`).
-  3. **Analysis gate** — `speckit-analyze` reports no critical issues before `speckit-implement`;
+     `speckit-plan`); the branch was rebased onto the current `main` before `speckit-plan`;
+     the feature can be reviewed in one pull request, or it is sent back to be split.
+  3. **Analysis gate** — the branch is rebased onto the current `main` before
+     `speckit-implement`; `speckit-analyze` reports no critical issues before `speckit-implement`;
      a structural change in `plan.md` that is missing from the model is an issue, and so is an
      acceptance scenario whose test task is missing from `tasks.md` or does not precede its
      implementation tasks.
-  4. **Merge gate** — the pull request links `spec.md`, `plan.md`, and `tasks.md`; the CI
+  4. **Merge gate** — the pull request contains the complete feature and links `spec.md`,
+     `plan.md`, and `tasks.md`; the branch is rebased onto the current `main`; the CI
      workflow of every affected deployable passes — build including code generation from the
      API contract, full test suite, Spring Modulith verification and the other architecture
      fitness tests, Flyway migrations applied to a test database, and the container image
      build; when `api/` changes, the contract lint and the breaking-change comparison with
      `main` pass; the end-to-end workflow passes; the scenario traceability check passes;
      the architecture model passes validation and the `speckit-architecture` verification
-     after `speckit-implement` reports no unresolved drift; a reviewer confirms the
-     implementation matches the spec.
-- Pipeline-exempt changes (Principle I) still require passing tests and review.
+     after `speckit-implement` reports no unresolved drift; the reviewer (see Review) confirms
+     that the implementation matches the spec and that no principle or constraint is violated
+     without a recorded justification; a person merges the pull request by squashing.
+- Pipeline-exempt changes (Principle I) follow the same branching, review, and merging rules:
+  they are rebased onto the current `main` before merge and require passing tests.
 
 ## Governance
 
@@ -269,15 +293,16 @@ ADR (Principle II) and an amendment of this section.
   change and its rationale, and are merged only after review by a project decision-maker.
   Amendments that change a principle or gate MUST describe any migration needed for work in
   progress.
-- An ADR that supersedes a decision summarised in Technology and Security Constraints MUST be
-  accompanied by an amendment of that section in the same pull request.
+- An ADR that supersedes a decision summarised in Technology and Security Constraints or in
+  Development Workflow and Quality Gates MUST be accompanied by an amendment of that section
+  in the same pull request.
 - Versioning follows semantic versioning:
   - MAJOR — a principle or gate is removed or redefined incompatibly.
   - MINOR — a principle or section is added or materially expanded.
   - PATCH — clarifications and wording fixes with no change in meaning.
 - Compliance is checked at the Plan gate (Constitution Check in every `plan.md`), by
-  `speckit-analyze`, by architecture model validation, by the required CI workflows, and during
-  pull-request review. Reviewers MUST reject changes that violate a principle or constraint
-  without a recorded justification.
+  `speckit-analyze`, by architecture model validation, by the required CI workflows, by branch
+  protection and the repository's merge settings, and during pull-request review. Reviewers
+  MUST reject changes that violate a principle or constraint without a recorded justification.
 
-**Version**: 1.3.0 | **Ratified**: 2026-09-30 | **Last Amended**: 2026-10-01
+**Version**: 1.4.0 | **Ratified**: 2026-09-30 | **Last Amended**: 2026-10-03
