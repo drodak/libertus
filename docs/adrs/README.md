@@ -27,3 +27,5 @@ To change an accepted decision, write a new ADR and set the old one's status to 
 | [0010](0010-jpa-with-spring-jdbc-fallback-for-data-access.md) | JPA as the Primary Data Access Technology, Spring JDBC as the Documented Fallback | accepted | 2026-10-01 |
 | [0011](0011-angular-as-the-frontend-framework.md) | Angular as the Frontend Framework | accepted | 2026-10-01 |
 | [0012](0012-container-images-published-to-ghcr.md) | Container Images Published to GitHub Container Registry as the Delivery Artifact | accepted | 2026-10-01 |
+| [0013](0013-openapi-spec-first-api-contract.md) | OpenAPI Spec-First Contract for the Frontend–Backend API | accepted | 2026-10-01 |
+| [0014](0014-testing-strategy-by-layer.md) | Testing Strategy: Module-Centred Test Layers with Real Infrastructure | accepted | 2026-10-01 |
